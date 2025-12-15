@@ -1,7 +1,10 @@
 "use client";
 
+"use client";
+
+import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const slides = [
@@ -28,7 +31,7 @@ They are used for marketing, maybe buy & lock
 and yes, also for personal profit.
 I won’t lie and pretend I’m a saint.
 
-    The other 50% go to the community.
+The other 50% go to the community.
 
 There will be a voting system where the community decides who wins.
 And the winner decides what happens next:
@@ -59,8 +62,6 @@ but you do it anyway.
 To express that,
 CancerCulture works with visual submissions.
 People show their personal cancer.
-
-
 `,
     right: `
 Creativity matters more than aesthetics.
@@ -77,14 +78,13 @@ funny or uncomfortably relatable.
 How these submissions are shared
 and how voting works
 is explained step by step on the next slides.
-
 `,
     image: "/cell-middle-v1.png",
   },
   {
-  id: 3,
-  title: "Participation & Uploads",
-  left: `
+    id: 3,
+    title: "Participation & Uploads",
+    left: `
 Taking part in CancerCulture is simple.
 
 If you want to participate,
@@ -100,7 +100,7 @@ there is no wallet connection required.
 To protect the platform from spam and bot uploads,
 participation requires a simple Discord verification.
 `,
-  right: `
+    right: `
 You can upload more than one picture
 if you want to increase your presence.
 
@@ -117,12 +117,12 @@ you must accept the rules.
 Without accepting them,
 participation is not possible.
 `,
-  image: "/cell-middle-v1.png",
-},
-{
-  id: 4,
-  title: "Voting & Rewards",
-  left: `
+    image: "/cell-middle-v1.png",
+  },
+  {
+    id: 4,
+    title: "Voting & Rewards",
+    left: `
 Voting is fully community-driven.
 
 There is no automated winner
@@ -139,7 +139,7 @@ They are not fixed to a strict schedule,
 but they are always announced early enough
 so nobody misses them.
 `,
-  right: `
+    right: `
 There is no fixed prize pool.
 
 Rewards depend on how much creator revenue
@@ -155,12 +155,12 @@ to artificially keep prize pools equal.
 
 Transparency matters more than predictability.
 `,
-  image: "/cell-middle-v1.png",
-},
-{
-  id: 5,
-  title: "The Winner’s Choice",
-  left: `
+    image: "/cell-middle-v1.png",
+  },
+  {
+    id: 5,
+    title: "The Winner’s Choice",
+    left: `
 Winning does not come with conditions.
 
 If your picture wins,
@@ -174,25 +174,25 @@ no pressure and no hidden rules.
 It is your win
 and your decision.
 `,
-  right: `
+    right: `
 As a winner, you have three options:
 
-You can keep the full price.
+You can keep the full prize.
 
-You can donate the full price to a charity.
+You can donate the full prize to a charity.
 Suggestions can be provided,
 but the final choice is always yours.
 
-Or you can split the price
+Or you can split the prize
 between personal profit and charity
 in any percentage you want.
 `,
-  image: "/cell-middle-v1.png",
-},
-{
-  id: 6,
-  title: "Culture, Fame & Rules",
-  left: `
+    image: "/cell-middle-v1.png",
+  },
+  {
+    id: 6,
+    title: "Culture, Fame & Rules",
+    left: `
 CancerCulture is not meant to be toxic.
 
 The idea is to create a shared culture
@@ -206,12 +206,12 @@ CancerCulture features a
 This is not meant to insult anyone.
 It is part of the narrative and the joke.
 `,
-  right: `
+    right: `
 The Wall of Fame highlights winners
 who decided to give something back.
 
 The Wall of Shame lists winners
-who kept the full price.
+who kept the full prize.
 
 Both outcomes are valid choices.
 
@@ -222,12 +222,12 @@ If someone uses these mechanics
 to attack others,
 they will be removed from the Community.
 `,
-  image: "/cell-middle-v1.png",
-},
-{
-  id: 7,
-  title: "Before You Upload",
-  left: `
+    image: "/cell-middle-v1.png",
+  },
+  {
+    id: 7,
+    title: "Before You Upload",
+    left: `
 Before uploading a picture,
 there are a few things to prepare.
 
@@ -235,7 +235,7 @@ During the upload process,
 you will be asked to provide:
 
 – your X (Twitter) username
-– a wallet address where the price should be sent
+– a wallet address where the prize should be sent
 
 You will also be asked
 to make a preliminary decision
@@ -244,9 +244,9 @@ about what should happen if you win.
 This includes whether you want to:
 keep everything,
 donate everything,
-or split the price.
+or split the prize.
 `,
-  right: `
+    right: `
 If you decide to donate a part of your win,
 you can already choose
 a charity or organization.
@@ -266,22 +266,71 @@ Usernames, wallets and donation decisions
 are hidden until a winner is selected,
 so they have zero influence on voting.
 `,
-  image: "/cell-middle-v1.png",
-},
+    image: "/cell-middle-v1.png",
+  },
+  {
+    id: 8,
+    title: "Still here?",
+    left: `
+
+
+    
+
+
+
+    If you made it this far,
+you already understand the culture.
+
+
+
+
+`,
+    right: `
+
+    
+    
+    
+    
+
+    But just in case:
+
+The cell with the white clipboard
+at the bottom of the screen
+is the way in.
+
+Do with that what you want.
+
+
+
+`,
+    image: "/cell-middle-v1.png",
+  },
 ];
 
 export default function AboutPage() {
   const [index, setIndex] = useState(0);
+  const [cellHover, setCellHover] = useState(false);
+  const [cellLookDown, setCellLookDown] = useState(false);
+  
   const router = useRouter();
   const slide = slides[index];
 
-  const prev = () => {
-    if (index > 0) setIndex(index - 1);
-  };
+  useEffect(() => {
+    if (slide.id !== 8) {
+      setCellLookDown(false);
+      return;
+    }
 
-  const next = () => {
-    if (index < slides.length - 1) setIndex(index + 1);
-  };
+    const interval = setInterval(() => {
+      setCellLookDown(true);
+
+      setTimeout(() => {
+        setCellLookDown(false);
+      }, 1200);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [slide.id]);
 
   return (
     <div className="relative w-full h-screen bg-orange-background overflow-hidden flex items-center justify-center">
@@ -290,7 +339,7 @@ export default function AboutPage() {
         {/* LEFT ARROW */}
         {index > 0 && (
           <button
-            onClick={prev}
+            onClick={() => setIndex(index - 1)}
             className="absolute z-30 left-[clamp(-200px,-18vw,-280px)] top-[45%] -translate-y-1/2 text-5xl text-black/60 hover:text-black hover:scale-105 transition-all"
           >
             ←
@@ -300,7 +349,7 @@ export default function AboutPage() {
         {/* RIGHT ARROW */}
         {index < slides.length - 1 && (
           <button
-            onClick={next}
+            onClick={() => setIndex(index + 1)}
             className="absolute z-30 right-[clamp(-120px,-10vw,-160px)] top-[45%] -translate-y-1/2 text-5xl text-black/60 hover:text-black hover:scale-105 transition-all"
           >
             →
@@ -309,27 +358,39 @@ export default function AboutPage() {
 
         {/* CENTER CELL */}
         <div className="absolute inset-0 flex items-center justify-center translate-y-[clamp(-96px,-11vh,-132px)] translate-x-[clamp(-96px,-10vw,-152px)]">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="group cursor-pointer"
-          >
-            <Image
-              src={slide.image}
-              alt="Cancer cell mascot"
-              width={420}
-              height={420}
-              priority
-              className="drop-shadow-[0_10px_0_rgba(0,0,0,0.45)] transition-transform group-hover:scale-105"
-            />
-          </button>
-        </div>
+  <button
+    onClick={() => router.push("/")}
+    onMouseEnter={() => setCellHover(true)}
+    onMouseLeave={() => setCellHover(false)}
+    className="cursor-pointer"
+  >
+    <Image
+      src={
+      slide.id === 8
+    ? cellLookDown
+      ? "/cell-middle-v3.png"
+      : "/cell-middle-v1.png"
+    : cellHover
+      ? "/cell-middle-v2.png"
+      : "/cell-middle-v1.png"
+      }
+      alt="Cancer cell mascot"
+      width={420}
+      height={420}
+      priority
+      className="
+        drop-shadow-[0_10px_0_rgba(0,0,0,0.45)]
+        transition-all
+        duration-200
+        ease-out
+      "
+    />
+  </button>
+</div>
 
         {/* LEFT TEXT PANEL */}
         <div className="absolute left-[clamp(-120px,-14vw,-200px)] top-[clamp(-176px,-16vh,-104px)] w-[34%] bg-yellow-star rounded-3xl p-8 text-white">
-          <h2 className="text-lg font-bold mb-4 text-center">
-            {slide.title}
-          </h2>
+          <h2 className="text-lg font-bold mb-4 text-center">{slide.title}</h2>
           <div className="whitespace-pre-line text-[16.5px] leading-[1.65]">
             {slide.left}
           </div>
@@ -341,8 +402,40 @@ export default function AboutPage() {
             {slide.right}
           </div>
         </div>
-
       </div>
+
+      {/* UPLOAD CELL – persistent */}
+      <Link
+        href="/upload"
+        className="
+          fixed
+          bottom-12
+          left-1/2
+          translate-x-[clamp(-144px,-16vw,-248px)]
+          z-50
+          group
+        "
+      >
+        <div className="relative">
+          <Image
+            src="/upload-cell-v2.png"
+            alt="Upload your cancer"
+            width={180}
+            height={180}
+            className="
+              drop-shadow-[0_8px_0_rgba(0,0,0,0.35)]
+  transition-all
+  duration-300
+  ease-out
+  group-hover:scale-110
+  group-hover:rotate-[-4deg]
+  group-hover:brightness-110
+  active:scale-[0.96]
+            "
+          />
+
+        </div>
+      </Link>
     </div>
   );
 }

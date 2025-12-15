@@ -53,7 +53,7 @@ export default function Home() {
             "
           />
         </Link>
-
+      
       </div>
 
       {/* CONTRACT ADDRESS (desktop only, fixed) */}

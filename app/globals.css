@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+
+/* Cartoon font variable */
+:root {
+  --font-bangers: "Bangers";
+}
+
+/* Custom Colors from your banner */
+@layer base {
+  :root {
+    --orange-main: #ff5a1f;
+    --orange-light: #ff7a32;
+    --orange-dark: #d34117;
+    --yellow-star: #ffd84a;
+    --sunburst-red: #ff2d2e;
+    --blue-cell: #6ec6df;
+    --brown-cell: #b48a6c;
+  }
+}
+
+/* -------------------------------
+   CLEAN CancerCulture Background
+   (banner-like, comic rays + glow)
+---------------------------------- */
+.bg-orange-background {
+  background-image: url("/banner-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Noise / Stars overlay (optional but looks great) */
+.bg-orange-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity: 0.12;
+  z-index: 0;
+}
+
+
+/* small helper: center container so hero content sits above the background */
+.page-hero {
+  position: relative;
+  z-index: 5; /* above the ::before layer */
+}
+
+/* cartoon title class */
+.cartoon-title {
+  font-family: var(--font-bangers), sans-serif;
+  color: white;
+  text-shadow: 4px 4px 0px rgba(0,0,0,0.95);
+  line-height: 1;
+}
+
+/* subtle pulse animation for background */
+@keyframes bgPulse {
+  0% { filter: brightness(1); transform: scale(1); }
+  50% { filter: brightness(1.06); transform: scale(1.002); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
+
+/* Small responsive adjustments for hero spacing (so content isn't flush to edges) */
+@media (min-width: 640px) {
+  .hero-padding {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-padding {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+/* Utility: image smoothing off for pixel-art / comic crispness if needed */
+.img-crisp {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes float {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  50%  { transform: translateY(-12px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+
+@layer utilities {
+  @keyframes ca-pulse {
+    0%, 100% {
+      background-color: transparent;
+      color: white;
+      border-color: rgba(0,0,0,0.9);
+    }
+    50% {
+      background-color: white;
+      color: black;
+      border-color: white;
+    }
+  }
+
+  .animate-ca-pulse {
+    animation: ca-pulse 9s ease-in-out infinite;
+  }
+}
+
+
+

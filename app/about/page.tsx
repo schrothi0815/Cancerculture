@@ -327,7 +327,7 @@ export default function AboutPage() {
       setTimeout(() => {
         setCellLookDown(false);
       }, 1200);
-    }, 6000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [slide.id]);

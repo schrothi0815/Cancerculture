@@ -1,18 +1,28 @@
-import ContractAddress from "./components/ContractAddress"
-import Image from "next/image"
-import Link from "next/link"
-import DiscordCell from "./components/DiscordCell"
-import TelegramCell from "./components/TelegramCell"
+import ContractAddress from "./components/ContractAddress";
+import { getTeamMember } from "@/lib/auth/guards";
+import Image from "next/image";
+import Link from "next/link";
+import DiscordCell from "./components/DiscordCell";
+import TelegramCell from "./components/TelegramCell";
+import { getContractAddress } from "@/lib/config/getContractAddress";
 
-export default function Home() {
+export default async function Home() {
+  let isTeamMember = false;
+
+  try {
+    // 🔐 Mod oder Admin?
+    await getTeamMember();
+    isTeamMember = true;
+  } catch { }
+
+  const contractAddress = await getContractAddress();
+
   return (
     <div className="relative w-full h-screen bg-orange-background overflow-hidden">
-
       {/* HERO CONTENT */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
-
         {/* CELLS AREA */}
-        <div className="translate-y-[-6%]">
+        <div className="translate-y-[-6%] sm:translate-y-[-6%]">
           <div
             className="
               flex items-center justify-center
@@ -33,7 +43,8 @@ export default function Home() {
         <Link
           href="/about"
           className="
-            -translate-y-[clamp(50px,7vh,110px)]
+            translate-y-[clamp(20px,7vh,60px)]
+            sm:-translate-y-[clamp(50px,7vh,110px)]
             transition-transform
             hover:scale-[1.04]
             active:scale-[0.98]
@@ -53,12 +64,30 @@ export default function Home() {
             "
           />
         </Link>
-      
       </div>
 
-      {/* CONTRACT ADDRESS (desktop only, fixed) */}
-      <ContractAddress address="AHX--JUST-AN-EXAMPLE-CA--FNByc1MwZpump" />
+            {/* 🛡️ TEAM BUTTON (Mod + Admin only) */}
+      {isTeamMember && (
+        <div className="absolute top-6 left-6 z-30">
+          <Link
+            href="/admin"
+            className="
+              px-4 py-2
+              rounded-md
+              bg transparent
+              text-white
+              text-sm
+              hover:bg-black
+              transition
+            "
+          >
+           🛡️ Moderation
+          </Link>
+        </div>
+      )}
 
+      {/* CONTRACT ADDRESS (desktop only, fixed) */}
+      <ContractAddress address={contractAddress} />
     </div>
-  )
+  );
 }

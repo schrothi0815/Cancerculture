@@ -10,7 +10,7 @@ const bangers = Bangers({
 
 export const metadata: Metadata = {
   title: "CancerCulture",
-  description: "The funny crypto meme community with weekly contests.",
+  description: "CancerCulture",
 };
 
 export default function RootLayout({

@@ -1,19 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 
 export default function DiscordCell() {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <a
-      href="https://discord.gg/cNdRK2HJ"
+      href="https://x.com/i/communities/1974188909858074899"
       target="_blank"
       rel="noopener noreferrer"
-      className="relative cursor-pointer"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="relative cursor-pointer group"
     >
       {/* CELL IMAGE */}
       <Image
@@ -30,31 +25,34 @@ export default function DiscordCell() {
         "
       />
 
-      {/* DISCORD ICON CTA ABOVE CELL */}
-      {hovered && (
-  <div
-    className="
-      absolute
-      -top-[clamp(55px,8vh,120px)]
-      left-1/2
-      -translate-x-1/2
-      pointer-events-none
-    "
-  >
-    <Image
-      src="/icons/discord-v1.png"
-      alt="Discord"
-      width={48}
-      height={48}
-      className="
-        w-12 h-12
-        object-contain
-        drop-shadow-[0_4px_0_rgba(0,0,0,0.5)]
-      "
-    />
-  </div>
-)}
+      {/* DISCORD ICON */}
+      <div
+        className="
+          absolute
+          -top-[clamp(55px,7vh,110px)]
+          left-1/2
+          -translate-x-1/2
+          pointer-events-none
 
+          opacity-100
+          md:opacity-0
+          md:group-hover:opacity-100
+          transition-opacity
+        "
+      >
+        <Image
+          src="/icons/x-v1.png"
+          alt="Discord"
+          width={48}
+          height={48}
+          className="
+            w-7 h-7
+            md:w-12 md:h-12
+            object-contain
+            drop-shadow-[0_4px_0_rgba(0,0,0,0.5)]
+          "
+        />
+      </div>
     </a>
   );
 }

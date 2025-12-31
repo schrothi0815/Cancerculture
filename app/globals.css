@@ -30,7 +30,7 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
   position: relative;
-  overflow: hidden;
+  ;
 }
 
 /* Noise / Stars overlay (optional but looks great) */

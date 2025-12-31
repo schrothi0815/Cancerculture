@@ -28,14 +28,13 @@ async function requireAdminOrMod() {
 }
 
 export async function POST(
-  _req: Request,
-  context: { params: { id: string } }
+  req: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // 🔐 Guard
     const user = await requireAdminOrMod();
-    const { id } = context.params;
-
+    const { id } = await context.params;
     const { error } = await supabaseAdmin
       .from("submissions")
       .update({

@@ -39,6 +39,17 @@ if (!code) {
     }
   );
 
+  // 🔴 DEBUG-BLOCK – HIER GENAU
+if (!tokenRes.ok) {
+  const text = await tokenRes.text();
+  console.error("DISCORD TOKEN ERROR:", text);
+
+  return NextResponse.redirect(
+    new URL(`${redirectPath}?error=discord_token`, req.url)
+  );
+}
+// 🔴 ENDE DEBUG-BLOCK
+
   const tokenData = await tokenRes.json();
 
   if (!tokenData.access_token) {

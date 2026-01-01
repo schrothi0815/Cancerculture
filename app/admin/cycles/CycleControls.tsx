@@ -59,34 +59,83 @@ export default function CycleControls() {
     }
   }
 
+  // 🆕 MANUELLER WORKER-TRIGGER
+  async function finalizeCyclesNow() {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch(
+        "/api/admin/cycles/finalize",
+        {
+          method: "POST",
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Unknown error");
+      }
+
+      if (data.processed === 0) {
+        setMessage("ℹ️ No finished cycles to finalize");
+      } else {
+        setMessage(
+          `🏁 Finalize worker executed (${data.processed} cycle(s))`
+        );
+      }
+    } catch (err: any) {
+      setMessage("❌ " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div>
       <button
-  onClick={startCycle}
-  disabled={loading}
-  style={{
-    padding: "8px 16px",
-    fontSize: 16,
-    cursor: loading ? "not-allowed" : "pointer",
-  }}
->
+        onClick={startCycle}
+        disabled={loading}
+        style={{
+          padding: "8px 16px",
+          fontSize: 16,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
         {loading ? "Starting…" : "Start Cycle"}
       </button>
 
       <button
-  onClick={endCycle}
-  disabled={loading}
-  style={{
-    marginLeft: 12,
-    padding: "8px 16px",
-    fontSize: 16,
-    cursor: loading ? "not-allowed" : "pointer",
-  }}
->
+        onClick={endCycle}
+        disabled={loading}
+        style={{
+          marginLeft: 12,
+          padding: "8px 16px",
+          fontSize: 16,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
         End Cycle
       </button>
 
-      {message && <p style={{ marginTop: 16 }}>{message}</p>}
+      {/* 🆕 FINALIZE BUTTON */}
+      <button
+        onClick={finalizeCyclesNow}
+        disabled={loading}
+        style={{
+          marginLeft: 12,
+          padding: "8px 16px",
+          fontSize: 16,
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        Finalize Cycles (Worker)
+      </button>
+
+      {message && (
+        <p style={{ marginTop: 16 }}>{message}</p>
+      )}
     </div>
   );
 }

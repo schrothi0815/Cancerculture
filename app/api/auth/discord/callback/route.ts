@@ -9,11 +9,14 @@ export async function GET(req: Request) {
   const redirectPath =
     searchParams.get("state") || "/upload";
 
-  if (!code) {
-    return NextResponse.redirect(
-      new URL(`${redirectPath}?error=discord`, req.url)
-    );
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+
+if (!code) {
+  return NextResponse.redirect(
+    new URL(`${redirectPath}?error=discord`, baseUrl)
+  );
+}
+
 
   // 1️⃣ Code → Access Token
   const tokenRes = await fetch(
@@ -39,10 +42,11 @@ export async function GET(req: Request) {
   const tokenData = await tokenRes.json();
 
   if (!tokenData.access_token) {
-    return NextResponse.redirect(
-      new URL(`${redirectPath}?error=discord`, req.url)
-    );
-  }
+  return NextResponse.redirect(
+    new URL(`${redirectPath}?error=discord`, baseUrl)
+  );
+}
+
 
   // 2️⃣ Discord User holen
   const userRes = await fetch(
@@ -57,10 +61,11 @@ export async function GET(req: Request) {
   const user = await userRes.json();
 
   if (!user?.id) {
-    return NextResponse.redirect(
-      new URL(`${redirectPath}?error=discord`, req.url)
-    );
-  }
+  return NextResponse.redirect(
+    new URL(`${redirectPath}?error=discord`, baseUrl)
+  );
+}
+
 
   // 🧠 3️⃣ INVITE-FLOW erkennen
   if (redirectPath.startsWith("/invite/")) {
@@ -95,7 +100,7 @@ export async function GET(req: Request) {
   }
 
   // 4️⃣ Cookie setzen + Redirect
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+
 
 const response = NextResponse.redirect(
   new URL(redirectPath, baseUrl)

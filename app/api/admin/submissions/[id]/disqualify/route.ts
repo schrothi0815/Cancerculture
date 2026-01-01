@@ -1,11 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/db/admin";
 import { logModerationAction } from "@/lib/logging/logModerationAction";
 
-/**
- * 🔐 Admin / Mod Guard
- */
 async function requireAdminOrMod() {
   const cookieStore = await cookies();
   const discordUserId = cookieStore.get("discord_user_id")?.value;
@@ -28,13 +25,13 @@ async function requireAdminOrMod() {
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 🔐 Guard
     const user = await requireAdminOrMod();
     const { id } = await context.params;
+
     const {
       reasonCode,
       reasonText,
@@ -42,6 +39,7 @@ export async function POST(
       disqualificationType,
     } = await req.json();
 
+    // ✅ DEINE VALIDIERUNGEN – BLEIBEN DRIN
     if (
       disqualificationType !== "rule_violation" &&
       disqualificationType !== "illegal_content"
@@ -59,7 +57,6 @@ export async function POST(
       );
     }
 
-    // 🔒 Submission disqualifizieren
     const { error } = await supabaseAdmin
       .from("submissions")
       .update({
@@ -75,7 +72,6 @@ export async function POST(
       );
     }
 
-    // 🧾 Moderation Log
     await logModerationAction({
       actorRole: user.role,
       actorId: user.discordUserId,

@@ -1,26 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/db/admin";
 import { logModerationAction } from "@/lib/logging/logModerationAction";
 
-/**
- * 🔐 Admin / Mod Guard
- */
 async function requireAdminOrMod() {
   const cookieStore = await cookies();
   const discordUserId = cookieStore.get("discord_user_id")?.value;
 
-  if (!discordUserId) {
-    throw new Error("Unauthorized");
-  }
+  if (!discordUserId) throw new Error("Unauthorized");
 
-  const { data: member, error } = await supabaseAdmin
+  const { data: member } = await supabaseAdmin
     .from("team_members")
     .select("role")
     .eq("discord_user_id", discordUserId)
     .single();
 
-  if (error || !member || !["admin", "mod"].includes(member.role)) {
+  if (!member || !["admin", "mod"].includes(member.role)) {
     throw new Error("Forbidden");
   }
 
@@ -28,13 +23,13 @@ async function requireAdminOrMod() {
 }
 
 export async function POST(
-  req: Request,
+  _req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 🔐 Guard
     const user = await requireAdminOrMod();
     const { id } = await context.params;
+
     const { error } = await supabaseAdmin
       .from("submissions")
       .update({
@@ -44,14 +39,12 @@ export async function POST(
       .eq("id", id);
 
     if (error) {
-      console.error("REINSTATE ERROR", error);
       return NextResponse.json(
         { error: "Failed to reinstate submission" },
         { status: 500 }
       );
     }
 
-    // 🧾 Moderation Log
     await logModerationAction({
       actorRole: user.role,
       actorId: user.discordUserId,
@@ -63,7 +56,7 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json(
-      { error: err.message || "Unauthorized" },
+      { error: err.message ?? "Unauthorized" },
       { status: 403 }
     );
   }

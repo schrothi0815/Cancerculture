@@ -2,17 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import AboutAnimatedCell from "./AboutAnimatedCell";
+import { useState } from "react";
 
-const slides = [
+/* ================= CONTENT ================= */
+/* TEXTE AUS DesktopAbout.tsx KOPIEREN */
+
+const sections = [
   {
-    id: 1,
-    leftTitle: "What is CancerCulture?",
-    rightTitle: "The name is the narrative.",
-    left: `
-CancerCulture was born out of a simple but uncomfortable truth:
+    title: "What is CancerCulture?",
+    text: `CancerCulture was born out of a simple but uncomfortable truth:
 The memecoin space sometimes feels like cancer.
 
 The idea behind it is simple.
@@ -28,12 +26,11 @@ The name CancerCulture is not meant to make fun of sick people,
 and it has nothing to do with cancer as a disease.
 
 It refers only to a cancerous space,
-and to everyone’s personal cancer.
-
-`,
-  
-    right: `
-Everyone is encouraged to upload a picture of their personal cancer.
+and to everyone’s personal cancer.`,
+  },
+  {
+    title: "The name is the narrative.",
+    text: `Everyone is encouraged to upload a picture of their personal cancer.
 
 Your personal cancer does not mean an illness.
 It means something unhealthy, irrational, or unnecessary
@@ -52,16 +49,11 @@ Step 1: Think.
 Step 2: Be creative.
 Step 3: Upload it.
 Step 4: Vote on other submissions.
-Step 5: Chill and shill.
-`,
-    image: "/cell-middle-v1.png",
+Step 5: Chill and shill.`,
   },
   {
-    id: 2,
-    leftTitle: "FAQ & Info.",
-    rightTitle: "Rules and Guidelines.",
-    left: `
--------------------------------------------------
+    title: "FAQ & Info.",
+    text: `-------------------------------------------------
 HOW IT WORKS:    
 -------------------------------------------------
 
@@ -224,12 +216,11 @@ Whatever the winning creator chooses, we mirror.
 
 -If the winner donates, we donate to the same organization.
 
-This applies per round, without exceptions.
-
-
-`,
-    right: `
--------------------------------------------------  
+This applies per round, without exceptions.`,
+  },
+  {
+    title: "Rules and Guidelines.",
+    text: `-------------------------------------------------  
 CONTENT & SUBMISSIONS:
 -------------------------------------------------
 
@@ -372,263 +363,73 @@ The cell with the white clipboard
 at the bottom of the screen
 is the way in.
 
-Do with that what you want.
-
-
-`,
-    image: "/cell-middle-v1.png",
+Do with that what you want.`,
   },
 ];
 
-export default function DesktopAbout() {
-  const [index, setIndex] = useState(0);
-  const [cellHover, setCellHover] = useState(false);
-  const [cellLookDown, setCellLookDown] = useState(false);
-  
-  const router = useRouter();
-  const slide = slides[index];
+/* ================= COMPONENT ================= */
 
-  useEffect(() => {
-    if (slide.id !== 2) {
-      setCellLookDown(false);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCellLookDown(true);
-
-      setTimeout(() => {
-        setCellLookDown(false);
-      }, 1200);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [slide.id]);
+export default function AboutReading() {
+  const [active, setActive] = useState<number | null>(null);
 
   return (
-    <div className="relative w-full min-h-screen bg-orange-background overflow-hidden flex items-center justify-center">
-
-      <div className="relative z-20 w-full max-w-6xl h-[520px]">
-
-      {/* TOP LINKS (Page 2 Navigation) */}
-<div className="absolute top-[clamp(-280px,-36vh,-400px)] left-0 right-0 flex items-center justify-between px-2 z-40">
-
-  {/* Wall of Fame */}
-  <div className="-translate-x-[64px]">
-  <Link
-    href="/wall/fame"
-    className="flex items-center gap-2 text-black text-2xl font-bold hover:scale-105"
-  >
-    <AboutAnimatedCell
-            alt="Wall of Fame cell"
-      frames={[
-        "/fame/fame-v1.png",
-        "/fame/fame-v2.png",
-        "/fame/fame-v3.png",
-      ]}
-    />
-    <span>Wall of Fame</span>
-  </Link>
-</div>
-  {/* Vote */}
-  <Link
-  href="/vote"
-  className="
-    text-black
-    text-3xl
-    font-bold
-    hover:scale-105
-    transition-transform
-    -translate-x-[75px]
-  "
->
-  Vote
-</Link>
-
-  {/* Wall of Shame */}
-<div className="-translate-x-[50px]">
-  <Link
-    href="/wall/shame"
-    className="flex items-center gap-3 text-black text-2xl font-bold hover:scale-105"
-  >
-    <span>Wall of Shame</span>
-    <AboutAnimatedCell
+    <div className="min-h-screen bg-orange-background text-black">
       
-      alt="Wall of Shame cell"
-      frames={[
-        "/fame/fame-v1.png",
-        "/fame/fame-v2.png",
-        "/fame/fame-v4.png",
-      ]}
-    />
-  </Link>
-</div>
+      {/* ===== TOP NAV ===== */}
+      <div className="sticky top-0 z-40 bg-orange-background border-b border-black/10">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between font-bold">
+          <Link href="/wall/fame">Wall of Fame</Link>
+          <Link href="/vote">Vote</Link>
+          <Link href="/wall/shame">Wall of Shame</Link>
+        </div>
+      </div>
 
-</div>
+      {/* ===== CONTENT ===== */}
+      <div className="max-w-3xl mx-auto px-4 py-10 space-y-12">
 
+        {sections.map((section, i) => (
+          <div
+            key={i}
+            className="bg-yellow-star rounded-2xl p-6 shadow-sm"
+          >
+            <button
+              onClick={() => setActive(active === i ? null : i)}
+              className="w-full text-left"
+            >
+              <h2 className="text-xl font-bold mb-2 flex items-center justify-between">
+                {section.title}
+                <span className="text-sm opacity-60">
+                  {active === i ? "−" : "+"}
+                </span>
+              </h2>
+            </button>
 
-        {/* LEFT ARROW */}
-        {index > 0 && (
-  <button
-    onClick={() => setIndex(index - 1)}
-    className="
-      absolute z-30
-      left-[clamp(-200px,-18vw,-280px)]
-      top-[45%]
-      -translate-y-1/2
-      text-black/60
-      hover:text-black
-      hover:scale-105
-      transition-all
-      text-xl
-      font-bold
-    "
-  >
-    {"Back"}
-  </button>
-)}
-
-        {/* RIGHT ARROW */}
-        {index < slides.length - 1 && (
-  <button
-    onClick={() => setIndex(index + 1)}
-    className="
-      absolute z-30
-      right-[clamp(-120px,-10vw,-160px)]
-      top-[45%]
-      -translate-y-1/2
-      text-black/60
-      hover:text-black
-      hover:scale-105
-      transition-all
-      text-xl
-      font-bold
-    "
-  >
-    {index === 0 && "FAQ →"}
-  </button>
-)}
-
-        {/* CENTER CELL */}
-        <div className="absolute inset-0 flex items-center justify-center translate-y-[clamp(-96px,-11vh,-132px)] translate-x-[clamp(-96px,-10vw,-152px)]">
-  <button
-    onClick={() => router.push("/")}
-    onMouseEnter={() => setCellHover(true)}
-    onMouseLeave={() => setCellHover(false)}
-    className="cursor-pointer"
-  >
-    <Image
-      src={
-      slide.id === 2
-    ? cellLookDown
-      ? "/cell-middle-v3.png"
-      : "/cell-middle-v1.png"
-    : cellHover
-      ? "/cell-middle-v2.png"
-      : "/cell-middle-v1.png"
-      }
-      alt="Cancer cell mascot"
-      width={420}
-      height={420}
-      priority
-      className="
-        drop-shadow-[0_10px_0_rgba(0,0,0,0.45)]
-        transition-all
-        duration-200
-        ease-out
-      "
-    />
-  </button>
-</div>
-
-        {/* LEFT TEXT PANEL */}
-        <div
-  className="
-    absolute
-    left-[clamp(-120px,-14vw,-200px)]
-    top-[clamp(-176px,-16vh,-104px)]
-    w-[34%]
-    bg-yellow-star
-    rounded-3xl
-    p-8
-    text-white
-    h-[600px]
-    overflow-hidden
-  "
->
-  <h2 className="text-lg font-bold mb-4 text-center">
-    {slide.leftTitle}
-  </h2>
-
-  <div className="h-full overflow-y-auto pr-2">
-    <div className="whitespace-pre-line text-[16.5px] leading-[1.65] text-neutral-800">
-  {slide.left}
-</div>
-  </div>
-</div>
-
-        {/* RIGHT TEXT PANEL */}
-        <div
-  className="
-    absolute
-    right-[clamp(-24px,-2.5vw,-48px)]
-    top-[clamp(-176px,-16vh,-104px)]
-    w-[36%]
-    bg-yellow-star
-    rounded-3xl
-    p-8
-    text-white
-    h-[640px]
-    overflow-hidden
-  "
->
-  {slide.rightTitle && (
-  <h2 className="text-lg font-bold mb-4 text-center">
-    {slide.rightTitle}
-  </h2>
-)}
-
-<div className="max-h-[calc(100%-3rem)] overflow-y-auto pr-2">
-  <div className="whitespace-pre-line text-[16.5px] leading-[1.65] text-neutral-800">
-  {slide.right}
-</div>
-
-</div>
-</div>
+            {active === i && (
+              <div className="mt-4 whitespace-pre-line text-[15.5px] leading-[1.7] text-neutral-800">
+                {section.text}
+              </div>
+            )}
+          </div>
+        ))}
 
       </div>
 
-      {/* UPLOAD CELL – persistent */}
+      {/* ===== UPLOAD CTA ===== */}
       <Link
         href="/upload"
-        className="
-          fixed
-          bottom-12
-          left-1/2
-          translate-x-[clamp(-144px,-16vw,-248px)]
-          z-50
-          group
-        "
+        className="fixed bottom-6 right-6 z-50"
       >
-        <div className="relative">
-          <Image
-            src="/upload-cell-v2.png"
-            alt="Upload your cancer"
-            width={180}
-            height={180}
-            className="
-              drop-shadow-[0_8px_0_rgba(0,0,0,0.35)]
-  transition-all
-  duration-300
-  ease-out
-  group-hover:scale-110
-  group-hover:rotate-[-4deg]
-  group-hover:brightness-110
-  active:scale-[0.96]
-            "
-          />
-
-        </div>
+        <Image
+          src="/upload-cell-v2.png"
+          alt="Upload your cancer"
+          width={72}
+          height={72}
+          className="
+            drop-shadow-[0_6px_0_rgba(0,0,0,0.35)]
+            hover:scale-105
+            transition-transform
+          "
+        />
       </Link>
     </div>
   );

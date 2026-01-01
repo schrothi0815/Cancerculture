@@ -432,9 +432,9 @@ export default function MobileAbout() {
             {SECTIONS[index].title}
           </h2>
 
-          <div className="whitespace-pre-line text-[15.5px] leading-relaxed">
-            {SECTIONS[index].text}
-          </div>
+          <div className="whitespace-pre-line text-[15.5px] leading-relaxed text-black">
+  {SECTIONS[index].text}
+</div>
         </div>
       </div>
 

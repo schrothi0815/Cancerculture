@@ -9,6 +9,19 @@ type ScannerState = "idle" | "hover" | "uploading" | "done";
 type PayoutChoice = "keep" | "donate" | "split";
 type SubmitState = "idle" | "partial" | "ready";
 
+const CHARITY_OPTIONS = [
+  { value: "save_the_children", label: "Save the Children" },
+  { value: "dogs_for_better_lives", label: "Dogs for Better Lives" },
+  { value: "love_justice_international", label: "Love Justice International" },
+  { value: "habitat_for_humanity", label: "Habitat for Humanity International" },
+  { value: "convoy_of_hope", label: "Convoy of Hope" },
+  { value: "sea_shepherd", label: "Sea Shepherd Conservation Society" },
+  { value: "animals_asia", label: "Animals Asia Foundation" },
+  { value: "all_gods_children", label: "All God's Children International" },
+];
+
+
+
 /* ================= COMPONENT ================= */
 export default function MobileUpload({
   showSupportLink,
@@ -32,6 +45,8 @@ export default function MobileUpload({
   const [payoutChoice, setPayoutChoice] = useState<PayoutChoice | null>(null);
   const [splitPercent, setSplitPercent] = useState(50);
   const [charity, setCharity] = useState<string | null>(null);
+  const [customCharity, setCustomCharity] = useState("");
+
 
   /* ---------- BLINK ---------- */
   useEffect(() => {
@@ -109,7 +124,12 @@ export default function MobileUpload({
       formData.append("walletAddress", walletAddress);
       formData.append("payoutChoice", payoutChoice!);
       formData.append("splitPercent", splitPercent.toString());
-      if (charity) formData.append("charity", charity);
+      if (charity === "other") {
+  formData.append("charity", customCharity);
+} else if (charity) {
+  formData.append("charity", charity);
+}
+
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -229,20 +249,42 @@ export default function MobileUpload({
 
 
           {(payoutChoice === "donate" || payoutChoice === "split") && (
-            <select
-              value={charity ?? ""}
-              onChange={(e) => setCharity(e.target.value)}
-              className="rounded-xl px-4 py-2 bg-white outline-none"
-            >
-              <option value="" disabled>
-                Select charity
-              </option>
-              <option value="cancer_research">Cancer Research</option>
-              <option value="doctors_without_borders">
-                Doctors Without Borders
-              </option>
-            </select>
-          )}
+  <div className="flex flex-col gap-2">
+    <select
+      value={charity ?? ""}
+      onChange={(e) => {
+        setCharity(e.target.value);
+        if (e.target.value !== "other") {
+          setCustomCharity("");
+        }
+      }}
+      className="rounded-xl px-4 py-2 bg-white outline-none"
+    >
+      <option value="" disabled>
+        Select charity
+      </option>
+
+      {CHARITY_OPTIONS.map((org) => (
+        <option key={org.value} value={org.value}>
+          {org.label}
+        </option>
+      ))}
+
+      <option value="other">Other</option>
+    </select>
+
+    {charity === "other" && (
+      <input
+        type="text"
+        placeholder="Enter charity / organization"
+        value={customCharity}
+        onChange={(e) => setCustomCharity(e.target.value)}
+        className="rounded-xl px-4 py-2 bg-white outline-none"
+      />
+    )}
+  </div>
+)}
+
         </div>
 
         {/* ===== SUCCESS MESSAGE ===== */}

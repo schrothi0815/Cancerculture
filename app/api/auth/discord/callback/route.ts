@@ -95,9 +95,11 @@ export async function GET(req: Request) {
   }
 
   // 4️⃣ Cookie setzen + Redirect
-  const response = NextResponse.redirect(
-    new URL(redirectPath, req.url)
-  );
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+
+const response = NextResponse.redirect(
+  new URL(redirectPath, baseUrl)
+);
 
   response.cookies.set("discord_user_id", user.id, {
     httpOnly: true,

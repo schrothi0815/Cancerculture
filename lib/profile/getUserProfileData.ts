@@ -2,8 +2,6 @@ import { getLatestCycleState } from "@/lib/cycles/currentCycle";
 import { supabaseServer } from "@/lib/db/server";
 import { getUserSubmissions } from "@/lib/queries/getUserSubmissions";
 import { getPublicImageUrl } from "@/lib/r2/getPublicImageUrl";
-import { getUserSocialLinks } from "@/lib/socials/getUserSocialLinks";
-import type { UserSocialLink } from "@/lib/socials/types";
 import {
   normalizeSubmissionPublicVisibilityStatus,
   showsSubmissionImagePublicly,
@@ -64,9 +62,6 @@ export type UserProfileData = {
   currentSubmissions: CurrentProfileSubmission[];
   discordUserId: string;
   joinedDate: string | null;
-  showSocialsOnProfile: boolean;
-  showSocialsOnSubmissions: boolean;
-  socialLinks: UserSocialLink[];
   submissions: ProfileSubmission[];
   uploadQuota: SubmissionUploadQuota | null;
   votes: ProfileVote[];
@@ -80,13 +75,12 @@ export async function getUserProfileData(
     rawSubmissions,
     activeCycle,
     votesResult,
-    socialLinks,
   ] =
     await Promise.all([
       supabaseServer
         .from("user_logs")
         .select(
-          "first_seen_at, avatar_key, avatar_updated_at, discord_avatar, current_discord_username, show_socials, show_socials_on_submissions"
+          "first_seen_at, avatar_key, avatar_updated_at, discord_avatar, current_discord_username"
         )
         .eq("discord_user_id", discordUserId)
         .maybeSingle(),
@@ -98,7 +92,6 @@ export async function getUserProfileData(
         .eq("discord_user_id", discordUserId)
         .order("cycle_id", { ascending: false })
         .order("created_at", { ascending: false }),
-      getUserSocialLinks(discordUserId),
     ]);
 
   const userLog = userLogResult.data;
@@ -403,10 +396,6 @@ export async function getUserProfileData(
     currentSubmissions,
     discordUserId,
     joinedDate,
-    showSocialsOnProfile: userLog?.show_socials ?? false,
-    showSocialsOnSubmissions:
-      userLog?.show_socials_on_submissions ?? false,
-    socialLinks,
     submissions,
     uploadQuota,
     votes,

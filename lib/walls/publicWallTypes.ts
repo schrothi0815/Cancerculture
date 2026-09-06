@@ -21,7 +21,7 @@ export type PublicWallItem = {
   public_visibility_status: SubmissionPublicVisibilityStatus;
   public_visibility_reason_code: string | null;
   public_visibility_reason_text: string | null;
-  social_links: SubmissionSocialLink[];
+  social_links: readonly SubmissionSocialLink[];
   sponsored_meta: SponsoredCycleMeta | null;
   payout: PublicPayoutDetails | null;
 };

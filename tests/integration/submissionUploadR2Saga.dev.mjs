@@ -300,14 +300,7 @@ async function cleanupDatabaseFixtures() {
       .in("discord_user_id", Object.values(users)),
     "CLEANUP_SESSIONS"
   );
-  await assertNoError(
-    supabaseAdmin
-      .from("user_social_links")
-      .delete()
-      .in("discord_user_id", Object.values(users)),
-    "CLEANUP_SOCIALS"
-  );
-  await assertNoError(
+await assertNoError(
     supabaseAdmin
       .from("discord_member_state")
       .delete()
@@ -381,19 +374,16 @@ async function setupDatabaseFixtures() {
         discord_user_id: users.success,
         current_discord_username: "codex-r2-success",
         accepted_rules_version: rules.current_version,
-        show_socials_on_submissions: true,
       },
       {
         discord_user_id: users.compensated,
         current_discord_username: "codex-r2-compensated",
         accepted_rules_version: rules.current_version,
-        show_socials_on_submissions: false,
       },
       {
         discord_user_id: users.putFailure,
         current_discord_username: "codex-r2-put-failure",
         accepted_rules_version: rules.current_version,
-        show_socials_on_submissions: false,
       },
     ]),
     "USER_INSERT"
@@ -429,17 +419,7 @@ async function setupDatabaseFixtures() {
     ]),
     "SESSION_INSERT"
   );
-  await assertNoError(
-    supabaseAdmin.from("user_social_links").insert({
-      discord_user_id: users.success,
-      platform: "x",
-      handle: "@codex_r2_test",
-      profile_url: "https://x.com/codex_r2_test",
-      is_verified: true,
-      verified_at: new Date().toISOString(),
-    }),
-    "SOCIAL_INSERT"
-  );
+  // Provider proof fixtures belong exclusively in the isolated local Social harness.
 }
 
 async function createMedia() {
@@ -544,7 +524,7 @@ async function runSuccessCase(media) {
   ]);
   assert.equal(submissionRows.length, 1);
   assert.equal(privateRows.length, 1);
-  assert.equal(socialRows.length, 1);
+  assert.equal(socialRows.length, 0);
 
   const replay = await reserveSubmissionUpload({
     sessionId: sessions.success,

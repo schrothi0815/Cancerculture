@@ -1,4 +1,4 @@
-import type { SocialPlatform } from "./types";
+import type { VerifiedSocialProvider as SocialPlatform } from "./socialAccountIdentities.server";
 
 export const SOCIAL_PLATFORM_META: Record<
   SocialPlatform,
@@ -10,6 +10,7 @@ export const SOCIAL_PLATFORM_META: Record<
     iconSizeClass?: string;
   }
 > = {
+  youtube: { label: "YouTube", accentClass: "border-red-400/30 bg-red-500/15 text-red-100", iconText: "YT" },
   x: {
     label: "X",
     accentClass:

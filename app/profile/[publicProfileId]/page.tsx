@@ -2,11 +2,12 @@ import BackButton from "@/app/components/ui/BackButton";
 import Link from "next/link";
 import Image from "next/image";
 import PublicProfileSocialsSection from "@/app/components/profile/PublicProfileSocialsSection";
-import { getTeamMember } from "@/lib/auth/guards";
 import { SUBMISSION_PUBLIC_VISIBILITY } from "@/lib/moderation/submissionPublicVisibility";
 import { formatReason } from "@/lib/profile/formatReason";
 import { getPublicUserProfileData } from "@/lib/profile/getPublicUserProfileData";
 import { getSubmissionThumbnailUrl } from "@/lib/r2/getSubmissionThumbnailUrl";
+
+export const dynamic = "force-dynamic";
 
 function renderRank(submission: {
   rank: number | null;
@@ -29,15 +30,6 @@ export default async function PublicProfilePage({
 }: {
   params: Promise<{ publicProfileId: string }>;
 }) {
-  let canModerateSocials = false;
-
-  try {
-    await getTeamMember();
-    canModerateSocials = true;
-  } catch {
-    canModerateSocials = false;
-  }
-
   const { publicProfileId } = await params;
   const profile = await getPublicUserProfileData(publicProfileId);
 
@@ -105,8 +97,6 @@ export default async function PublicProfilePage({
 
         <PublicProfileSocialsSection
           socials={profile.socialLinks}
-          showSocials={profile.showSocials}
-          canModerate={canModerateSocials}
         />
 
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6">

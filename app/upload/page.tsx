@@ -30,6 +30,7 @@ export default async function UploadPage() {
       .catch(() => ({ organizations: [], available: false as const })),
   ]);
   const emptySocialSettings: UserSocialSettings = {
+    available: true,
     showSocialsOnSubmissions: false,
     socialCount: 0,
     verifiedSocialCount: 0,
@@ -65,7 +66,7 @@ export default async function UploadPage() {
           discordUserId,
           includeDiscordMembership: false,
         }),
-        getUserSocialSettings(discordUserId),
+        getUserSocialSettings(sessionState.session.session_id),
         getSolProfileWallet(sessionState.session),
       ]);
       participationState = uploadEligibility.isBanned

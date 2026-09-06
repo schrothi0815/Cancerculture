@@ -38,14 +38,7 @@ const publicSubmission = {
   disqualified_by_discord_username: null,
 };
 
-const publicSocial = {
-  id: 7,
-  platform: "youtube",
-  handle: "@creator",
-  profile_url: "https://youtube.example/@creator",
-  is_verified: true,
-  internal_only: "not public",
-};
+const publicSocial = { provider: "youtube", displayLabel: "Creator", url: "https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv" };
 
 function responseFor(table) {
   if (table === "user_logs") {
@@ -125,11 +118,11 @@ mock.module(
 );
 
 mock.module(
-  new URL("../../lib/socials/getUserSocialLinks.ts", import.meta.url),
+  new URL("../../lib/socials/socialAccountIdentities.server.ts", import.meta.url),
   {
     namedExports: {
-      getUserSocialLinks(discordUserId) {
-        state.internalSocialUserIds.push(discordUserId);
+      loadPublicSocialAccountIdentities(publicProfileId, surface) {
+        state.internalSocialUserIds.push([publicProfileId, surface]);
         return Promise.resolve([publicSocial]);
       },
     },
@@ -192,7 +185,7 @@ test("the public profile model keeps the Discord ID internal and returns only an
   );
   assert.doesNotMatch(profile.avatarUrl, new RegExp(DISCORD_AVATAR, "u"));
   assert.deepEqual(state.internalSubmissionUserIds, [DISCORD_USER_ID]);
-  assert.deepEqual(state.internalSocialUserIds, [DISCORD_USER_ID]);
+  assert.deepEqual(state.internalSocialUserIds, [[PUBLIC_PROFILE_ID, "profile"]]);
 });
 
 test("uploaded avatars, username history, submissions, and public Socials remain unchanged", async () => {
@@ -226,15 +219,7 @@ test("uploaded avatars, username history, submissions, and public Socials remain
       public_visibility_reason_text: null,
     },
   ]);
-  assert.deepEqual(profile.socialLinks, [
-    {
-      id: publicSocial.id,
-      platform: publicSocial.platform,
-      handle: publicSocial.handle,
-      profile_url: publicSocial.profile_url,
-      is_verified: publicSocial.is_verified,
-    },
-  ]);
+  assert.deepEqual(profile.socialLinks, [publicSocial]);
 });
 
 test("the opaque public route also transfers an existing uploaded avatar", async () => {

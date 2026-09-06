@@ -294,9 +294,6 @@ export default async function MyProfilePage() {
     currentSubmissions,
     discordUserId,
     joinedDate,
-    showSocialsOnProfile,
-    showSocialsOnSubmissions,
-    socialLinks,
     submissions,
     uploadQuota,
     votes,
@@ -368,11 +365,7 @@ export default async function MyProfilePage() {
         <PendingDonationCorrections items={donationCorrections?.items ?? null} organizations={organizations} databaseTime={donationCorrections?.databaseTime ?? null} />
 
         <div className="space-y-4">
-          <ProfileSocialsSection
-            initialSocialLinks={socialLinks}
-            initialShowSocialsOnProfile={showSocialsOnProfile}
-            initialShowSocialsOnSubmissions={showSocialsOnSubmissions}
-          />
+          <ProfileSocialsSection />
         </div>
 
         <div className="relative left-1/2 w-[calc(100vw-2rem)] max-w-[120rem] -translate-x-1/2 space-y-4">

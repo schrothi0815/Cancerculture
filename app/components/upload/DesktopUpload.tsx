@@ -859,7 +859,9 @@ if (!file) {
             >
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="font-[Permanent_Marker] text-[var(--orange-dark)]">
-                {socialSettings.socialCount === 0 ? (
+                {!socialSettings.available ? (
+                  <span>Social account settings could not be loaded. You can still submit.</span>
+                ) : socialSettings.socialCount === 0 ? (
                   <span>
                     No socials connected yet.
                   </span>

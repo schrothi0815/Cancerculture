@@ -1,12 +1,8 @@
 "use client";
 
-import { getSocialDisplayLabel } from "@/lib/socials/normalize";
 import { SOCIAL_PLATFORM_META } from "@/lib/socials/platforms";
 import Image from "next/image";
-import type {
-  PublicSocialLink,
-  SocialPlatform,
-} from "@/lib/socials/types";
+import type { PublicSocialAccountIdentity, VerifiedSocialProvider as SocialPlatform } from "@/lib/socials/socialAccountIdentities.server";
 
 export function SocialPlatformBadge({
   platform,
@@ -57,30 +53,30 @@ export function SocialLinkRow({
   social,
   showStatus = true,
 }: {
-  social: PublicSocialLink;
+  social: PublicSocialAccountIdentity;
   showStatus?: boolean;
 }) {
   return (
     <a
-      href={social.profile_url}
+      href={social.url}
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/30 px-3 py-3 transition hover:border-[var(--orange-dark)]/40 hover:bg-white/5"
     >
-      <SocialPlatformBadge platform={social.platform} />
+      <SocialPlatformBadge platform={social.provider} />
 
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-white">
-          {getSocialDisplayLabel(social)}
+        <div className="break-words font-[Permanent_Marker] text-sm tracking-wide text-[var(--orange-main)]">
+          {social.displayLabel}
         </div>
         <div className="truncate text-xs text-gray-400">
-          {SOCIAL_PLATFORM_META[social.platform].label}
+          {SOCIAL_PLATFORM_META[social.provider].label}
         </div>
       </div>
 
       {showStatus ? (
         <SocialVerificationBadge
-          isVerified={social.is_verified}
+          isVerified={true}
         />
       ) : null}
     </a>

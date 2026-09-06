@@ -34,8 +34,6 @@ const adminOnlyRoutes = [
   "app/api/admin/logs/route.ts",
   "app/api/admin/logs/blocked/route.ts",
   "app/api/admin/logs/blocked/handled/route.ts",
-  "app/api/admin/socials/[socialId]/verify/route.ts",
-  "app/api/admin/socials/[socialId]/unverify/route.ts",
   "app/api/admin/submissions/public-visibility/route.ts",
   "app/api/admin/team/role/route.ts",
   "app/api/admin/team/roles/route.ts",

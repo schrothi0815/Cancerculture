@@ -1,54 +1,17 @@
 export const runtime = "nodejs";
-
-import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { requireSession } from "@/lib/auth/requireSession";
-import { supabaseAdmin } from "@/lib/db/admin";
-import { touchUserLog } from "@/lib/logging/touchUserLog";
+import { enforceRouteMutationGate } from "@/lib/writeGate.server";
+import { loadOwnSocialAccountManagement, setOwnSocialAccountVisibility } from "@/lib/socials/socialAccountManagement.server";
+import { readSocialManagementRequest, socialManagementError, socialManagementJson } from "@/lib/socials/socialAccountManagement.http";
 
-export async function PATCH(req: Request) {
+export async function PATCH(request: Request) {
+  const gate = enforceRouteMutationGate();
+  if (gate) return gate;
   try {
-    const { discord_user_id: discordUserId } =
-      await requireSession();
-    const { scope, value } = await req.json();
-
-    if (
-      (scope !== "profile" && scope !== "submissions") ||
-      typeof value !== "boolean"
-    ) {
-      return NextResponse.json(
-        { error: "Invalid visibility value." },
-        { status: 400 }
-      );
-    }
-
-    await touchUserLog({ discordUserId });
-
-    const { error } = await supabaseAdmin
-      .from("user_logs")
-      .update(
-        scope === "profile"
-          ? { show_socials: value }
-          : { show_socials_on_submissions: value }
-      )
-      .eq("discord_user_id", discordUserId);
-
-    if (error) {
-      console.error("[profile/social-visibility]", error);
-      return NextResponse.json(
-        { error: "Failed to update visibility." },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ scope, value });
-  } catch (error) {
-    if (error instanceof Response) {
-      throw error;
-    }
-
-    return NextResponse.json(
-      { error: "Failed to update visibility." },
-      { status: 500 }
-    );
-  }
+    const body = await readSocialManagementRequest(request, ["scope", "value", "expectedVersion", "requestId"]);
+    const session = await requireSession();
+    await setOwnSocialAccountVisibility(session.session_id, body);
+    return socialManagementJson(await loadOwnSocialAccountManagement(session.session_id));
+  } catch (error) { return socialManagementError(error); }
 }

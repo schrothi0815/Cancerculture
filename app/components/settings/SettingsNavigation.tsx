@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const navigationItems = [
   { href: "/settings", label: "Overview" },
+  { href: "/settings/profile", label: "Profile & social accounts" },
   { href: "/settings/security", label: "Security & 2FA" },
   { href: "/settings/notifications", label: "Notifications" },
   { href: "/settings/sponsor-analytics", label: "Sponsor analytics" },

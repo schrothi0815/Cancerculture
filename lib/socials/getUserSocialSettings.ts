@@ -1,44 +1,25 @@
-import { supabaseServer } from "@/lib/db/server";
-import { getUserSocialLinks } from "./getUserSocialLinks";
-import type { SocialPlatform } from "./types";
+import "server-only";
+import { loadOwnSocialAccountManagement } from "@/lib/socials/socialAccountManagement.server";
+import type { VerifiedSocialProvider } from "@/lib/socials/socialAccountIdentities.server";
 
 export type UserSocialSettings = {
+  available: boolean;
   showSocialsOnSubmissions: boolean;
   socialCount: number;
   verifiedSocialCount: number;
-  socialPlatforms: SocialPlatform[];
+  socialPlatforms: VerifiedSocialProvider[];
 };
 
-export async function getUserSocialSettings(
-  discordUserId: string
-): Promise<UserSocialSettings> {
-  const [userLogResult, socialLinks] = await Promise.all([
-    supabaseServer
-      .from("user_logs")
-      .select("show_socials_on_submissions")
-      .eq("discord_user_id", discordUserId)
-      .maybeSingle(),
-    getUserSocialLinks(discordUserId),
-  ]);
-
-  if (userLogResult.error) {
-    console.error(
-      "[getUserSocialSettings][user_logs]",
-      userLogResult.error
-    );
+export async function getUserSocialSettings(sessionId: string): Promise<UserSocialSettings> {
+  try {
+    const { identities, visibility } = await loadOwnSocialAccountManagement(sessionId);
+    const active = identities.filter(account => account.state === "active");
+    return { available: true, showSocialsOnSubmissions: visibility.submissions,
+      socialCount: active.length, verifiedSocialCount: active.length,
+      socialPlatforms: active.map(account => account.provider) };
+  } catch {
+    // Social availability must not prevent participation or pretend to be an empty account.
+    return { available: false, showSocialsOnSubmissions: false, socialCount: 0,
+      verifiedSocialCount: 0, socialPlatforms: [] };
   }
-
-  const verifiedSocials = socialLinks.filter(
-    (social) => social.is_verified
-  );
-
-  return {
-    showSocialsOnSubmissions:
-      userLogResult.data?.show_socials_on_submissions ?? false,
-    socialCount: socialLinks.length,
-    verifiedSocialCount: verifiedSocials.length,
-    socialPlatforms: verifiedSocials.map(
-      (social) => social.platform
-    ),
-  };
 }

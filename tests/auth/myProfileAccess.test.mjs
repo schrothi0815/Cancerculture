@@ -83,14 +83,7 @@ test("missing profile rows retain existing defaults", async () => {
     profile,
     /const joinedDate = userLog\?\.first_seen_at[\s\S]*?: null;/
   );
-  assert.match(
-    profile,
-    /showSocialsOnProfile: userLog\?\.show_socials \?\? false/
-  );
-  assert.match(
-    profile,
-    /showSocialsOnSubmissions:[\s\S]*?\?\? false/
-  );
+  assert.doesNotMatch(profile, /getUserSocialLinks|socialLinks|showSocialsOnProfile|showSocialsOnSubmissions/);
 });
 
 test("current-cycle submissions use one bounded private-data batch and id pairing", async () => {

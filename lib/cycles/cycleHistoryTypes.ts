@@ -30,7 +30,7 @@ export type CycleHistorySubmission = {
   publicVisibilityUpdatedAt: string | null;
   publicVisibilityUpdatedByDiscordUsername: string | null;
   winnerProfile: CycleHistoryWinnerProfile | null;
-  socialLinks: SubmissionSocialLink[];
+  socialLinks: readonly SubmissionSocialLink[];
 };
 
 export type CycleHistoryCycleSummary = {

@@ -120,6 +120,7 @@ export type PushEventType = keyof typeof PUSH_PAYLOAD_CATALOG;
 
 const EVENT_TYPES = new Set<string>(Object.keys(PUSH_PAYLOAD_CATALOG));
 const IN_PRODUCT_ONLY_EVENT_TYPES = new Set<string>([
+  "social_account_linking_unlocked",
   "user_warning_issued",
   "user_warning_overruled",
   "user_warning_appeal_upheld",

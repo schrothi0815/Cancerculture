@@ -7,8 +7,7 @@ import {
 } from "@/lib/moderation/submissionPublicVisibility";
 import { getUserSubmissions } from "@/lib/queries/getUserSubmissions";
 import { getPublicProfileAvatarPath } from "@/lib/profile/publicDiscordAvatar";
-import { getUserSocialLinks } from "@/lib/socials/getUserSocialLinks";
-import type { PublicSocialLink } from "@/lib/socials/types";
+import { loadPublicSocialAccountIdentities, type PublicSocialAccountIdentity } from "@/lib/socials/socialAccountIdentities.server";
 import type { SubmissionPublicVisibilityStatus } from "@/lib/moderation/submissionPublicVisibility";
 
 type BasePublicSubmission = Awaited<
@@ -35,7 +34,7 @@ export type PublicUserProfileData = {
   knownDiscordUsernames: string[];
   publicProfileId: string;
   showSocials: boolean;
-  socialLinks: PublicSocialLink[];
+  socialLinks: readonly PublicSocialAccountIdentity[];
   submissions: PublicProfileSubmission[];
   submissionCount: number;
   winCount: number;
@@ -44,6 +43,8 @@ export type PublicUserProfileData = {
 export async function getPublicUserProfileData(
   publicProfileId: string
 ): Promise<PublicUserProfileData> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(publicProfileId)) notFound();
+
   const { data: userLog, error } = await supabaseServer
     .from("user_logs")
     .select(
@@ -60,7 +61,7 @@ export async function getPublicUserProfileData(
 
   const [submissions, socialLinks] = await Promise.all([
     getUserSubmissions(discordUserId),
-    getUserSocialLinks(discordUserId),
+    loadPublicSocialAccountIdentities(userLog.public_profile_id, "profile"),
   ]);
 
   const submissionIds = submissions.map(
@@ -185,15 +186,7 @@ export async function getPublicUserProfileData(
       userLog.known_discord_usernames ?? [],
     publicProfileId: userLog.public_profile_id,
     showSocials: userLog.show_socials ?? false,
-    socialLinks: userLog.show_socials
-      ? socialLinks.map((social) => ({
-          id: social.id,
-          platform: social.platform,
-          handle: social.handle,
-          profile_url: social.profile_url,
-          is_verified: social.is_verified,
-        }))
-      : [],
+    socialLinks,
     submissions: publicSubmissions,
     submissionCount: publicSubmissions.length,
     winCount: cycleResults.data?.length ?? 0,

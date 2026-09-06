@@ -10,7 +10,7 @@ import {
 } from "react";
 import SponsoredBanner from "@/app/components/SponsoredBanner";
 import SubmissionReportPanel from "@/app/components/SubmissionReportPanel";
-import SubmissionSocialLinks from "@/app/components/profile/SubmissionSocialLinks";
+import { CompactSocialLinks } from "@/app/components/profile/SocialUi";
 import ProfileLinkButton from "@/app/components/profile/ProfileLinkButton";
 import LoadMoreButton from "@/app/components/ui/LoadMoreButton";
 import ModalCloseButton from "@/app/components/ui/ModalCloseButton";
@@ -518,6 +518,12 @@ function SubmissionModal({
                 </div>
               )}
 
+              <CompactSocialLinks
+                username={submission.discordUsername}
+                socials={submission.socialLinks}
+                className="pt-1"
+              />
+
             </div>
 
             {sponsoredMeta?.enabled && sponsoredMeta.bannerUrl ? (
@@ -533,13 +539,6 @@ function SubmissionModal({
               </div>
             ) : null}
           </div>
-
-          {submission.socialLinks.length > 0 && (
-            <SubmissionSocialLinks
-              socials={submission.socialLinks}
-              className="mx-auto w-full max-w-md"
-            />
-          )}
 
           {!submission.isDisqualified &&
           submission.publicVisibilityStatus ===

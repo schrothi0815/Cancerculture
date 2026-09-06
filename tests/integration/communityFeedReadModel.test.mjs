@@ -13,6 +13,7 @@ const state = {
   decodedFinalized: null,
   decodedCatalog: null,
   encoded: [],
+  socialLinks: new Map(),
 };
 
 function relatedRow(value) {
@@ -221,6 +222,23 @@ mock.module(new URL("../../lib/r2/getPublicImageUrl.ts", import.meta.url), {
   },
 });
 
+mock.module(
+  new URL("../../lib/socials/getSubmissionSocialLinks.ts", import.meta.url),
+  {
+    namedExports: {
+      async getSubmissionSocialLinksBySubmissionIds(submissionIds) {
+        state.calls.push(["submission_socials", submissionIds]);
+        return new Map(
+          submissionIds.map((submissionId) => [
+            submissionId,
+            state.socialLinks.get(submissionId) ?? [],
+          ]),
+        );
+      },
+    },
+  },
+);
+
 function invalidCursor() {
   const error = new Error("INVALID_CURSOR");
   error.name = "PublicPaginationCursorError";
@@ -383,6 +401,7 @@ test.beforeEach(() => {
   state.decodedFinalized = null;
   state.decodedCatalog = null;
   state.encoded = [];
+  state.socialLinks = new Map();
 });
 
 test("Live pagination filters hidden intermediate rows before LIMIT across multiple pages", async () => {
@@ -871,9 +890,11 @@ test("canonical detail returns the exact Live allowlist without final claims", a
     finalVoteCount: null,
     rankInCycle: null,
     payout: null,
+    socialLinks: [],
   });
   assert.doesNotMatch(serialized, /private-live|discord|moderation/iu);
   assert.equal(state.calls.some((call) => call[0] === "user_logs"), false);
+  assert.equal(state.calls.some((call) => call[0] === "submission_socials"), false);
 });
 
 test("canonical detail shows finalized metadata for both All and Trash eligibility", async () => {
@@ -883,6 +904,9 @@ test("canonical detail shows finalized metadata for both All and Trash eligibili
     feed_trash: true,
   });
   state.results = [all, trash];
+  state.socialLinks = new Map([
+    [6200, [{ provider: "x", displayLabel: "@creator", url: "https://x.com/creator" }]],
+  ]);
   state.userLogs = [all, trash].map((result, index) => ({
     public_profile_id: `00000000-0000-4000-8000-00000000000${index}`,
     discord_user_id: result.submissions.discord_user_id,
@@ -919,8 +943,12 @@ test("canonical detail shows finalized metadata for both All and Trash eligibili
           "u",
         ),
       );
+      assert.deepEqual(detail.socialLinks, [
+        { provider: "x", displayLabel: "@creator", url: "https://x.com/creator" },
+      ]);
     } else {
       assert.equal(detail.author.avatarUrl, null);
+      assert.deepEqual(detail.socialLinks, []);
     }
     assert.equal(detail.cycleStartedAt, "2026-08-09T08:00:00.000Z");
     assert.equal(detail.cycleEndedAt, "2026-08-11T20:00:00.000Z");

@@ -1,7 +1,7 @@
 import BackButton from "@/app/components/ui/BackButton";
 import Link from "next/link";
 import Image from "next/image";
-import PublicProfileSocialsSection from "@/app/components/profile/PublicProfileSocialsSection";
+import { CompactSocialLinks } from "@/app/components/profile/SocialUi";
 import { SUBMISSION_PUBLIC_VISIBILITY } from "@/lib/moderation/submissionPublicVisibility";
 import { formatReason } from "@/lib/profile/formatReason";
 import { getPublicUserProfileData } from "@/lib/profile/getPublicUserProfileData";
@@ -69,6 +69,13 @@ export default async function PublicProfilePage({
                 Wins: {profile.winCount}
               </div>
             </div>
+
+            <CompactSocialLinks
+              username={profile.currentDiscordUsername}
+              socials={profile.socialLinks}
+              align="center"
+              className="w-full max-w-2xl pt-1"
+            />
           </div>
         </div>
 
@@ -94,10 +101,6 @@ export default async function PublicProfilePage({
             </p>
           )}
         </div>
-
-        <PublicProfileSocialsSection
-          socials={profile.socialLinks}
-        />
 
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
           <h2 className="mb-4 text-xl font-[Permanent_Marker] text-[var(--orange-dark)]">

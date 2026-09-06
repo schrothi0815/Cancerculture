@@ -50,6 +50,7 @@ function detail(overrides = {}) {
     finalVoteCount: 5,
     rankInCycle: 2,
     payout: null,
+    socialLinks: [],
     ...overrides,
   };
 }
@@ -100,6 +101,11 @@ test("public detail DTO is exact and Live cannot claim final results", () => {
     detail({ author: { ...detail().author, avatarUrl: "https://cdn.example/avatar" } }),
     detail({ state: "live" }),
     detail({ imageUrl: "https://r2.example/raw.webp" }),
+    detail({ socialLinks: [{ provider: "x", displayLabel: "Bad", url: "https://evil.invalid/bad" }] }),
+    detail({ socialLinks: [
+      { provider: "x", displayLabel: "One", url: "https://x.com/one" },
+      { provider: "x", displayLabel: "Two", url: "https://x.com/two" },
+    ] }),
   ]) {
     assert.equal(isCommunityFeedDetail(invalid), false);
   }
@@ -152,6 +158,8 @@ test("detail UI is modal-like and mounts finalized Comments below collapsed meta
   assert.match(page, /detail\.author/u);
   assert.match(page, /Submitted by/u);
   assert.match(page, /View public profile/u);
+  assert.match(page, /CompactSocialLinks/u);
+  assert.match(page, /socials=\{detail\.socialLinks\}/u);
   assert.match(page, /Final rank/u);
   assert.match(page, /Final votes/u);
   assert.doesNotMatch(page, />\s*Finalized\s*</u);

@@ -79,7 +79,7 @@ test('direct legacy create, edit, delete, verify and unverify requests are inert
  assert.deepEqual(state.calls,[]);assert.deepEqual(state.rpcCalls,[]);
 });
 test('all established historical public consumers use the canonical shared reader and no persistent social cache',async()=>{
- for(const file of ['lib/walls/getPublicWallPage.ts','lib/cycles/getCycleHistoryData.ts']){
+ for(const file of ['lib/walls/getPublicWallPage.ts','lib/cycles/getCycleHistoryData.ts','lib/feed/communityFeedDetail.server.ts']){
   const source=await readFile(new URL('../../'+file,import.meta.url),'utf8');
   assert.match(source,/getSubmissionSocialLinksBySubmissionIds/);assert.doesNotMatch(source,/unstable_cache|use cache|submission_social_links/);
  }

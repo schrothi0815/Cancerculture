@@ -13,9 +13,11 @@ export const COMMUNITY_FEED_DETAIL_KEYS = [
   "finalVoteCount",
   "rankInCycle",
   "payout",
+  "socialLinks",
 ] as const;
 
 import { parsePublicPayoutDetails, type PublicPayoutDetails } from "@/lib/payouts/public";
+import type { PublicSocialAccountIdentity } from "@/lib/socials/socialAccountIdentities.server";
 
 export const COMMUNITY_FEED_DETAIL_AUTHOR_KEYS = [
   "publicProfileId",
@@ -44,6 +46,7 @@ export type CommunityFeedDetail = {
   finalVoteCount: number | null;
   rankInCycle: number | null;
   payout: PublicPayoutDetails | null;
+  socialLinks: readonly PublicSocialAccountIdentity[];
 };
 
 function requireSubmissionId(submissionId: number) {
@@ -97,6 +100,38 @@ function hasExactAuthorKeys(value: Record<string, unknown>) {
     JSON.stringify(Object.keys(value).sort()) ===
     JSON.stringify([...COMMUNITY_FEED_DETAIL_AUTHOR_KEYS].sort())
   );
+}
+
+const SOCIAL_URLS = {
+  tiktok: /^https:\/\/www\.tiktok\.com\/@[A-Za-z0-9_][A-Za-z0-9_.]{0,63}$/u,
+  youtube: /^https:\/\/www\.youtube\.com\/channel\/UC[A-Za-z0-9_-]{22}$/u,
+  x: /^https:\/\/x\.com\/[A-Za-z0-9_]{1,15}$/u,
+  instagram: /^https:\/\/www\.instagram\.com\/[A-Za-z0-9_][A-Za-z0-9_.]{0,63}$/u,
+  facebook: /^https:\/\/www\.facebook\.com\/[A-Za-z0-9][A-Za-z0-9.]{0,99}$/u,
+} as const;
+
+function isPublicSocialLink(value: unknown) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const link = value as Record<string, unknown>;
+  if (
+    JSON.stringify(Object.keys(link).sort()) !==
+      JSON.stringify(["displayLabel", "provider", "url"]) ||
+    typeof link.provider !== "string" ||
+    !Object.hasOwn(SOCIAL_URLS, link.provider) ||
+    typeof link.displayLabel !== "string" ||
+    link.displayLabel.trim().length === 0 ||
+    Array.from(link.displayLabel).length > 100 ||
+    typeof link.url !== "string"
+  ) {
+    return false;
+  }
+
+  return SOCIAL_URLS[
+    link.provider as keyof typeof SOCIAL_URLS
+  ].test(link.url);
 }
 
 function isCommunityFeedDetailAuthor(
@@ -170,6 +205,17 @@ export function isCommunityFeedDetail(
         (detail.author === null ||
           isCommunityFeedDetailAuthor(detail.author));
   const payoutIsValid = detail.payout === null || parsePublicPayoutDetails(detail.payout) !== null;
+  const socialLinksAreValid =
+    Array.isArray(detail.socialLinks) &&
+    detail.socialLinks.length <= 5 &&
+    detail.socialLinks.every(isPublicSocialLink) &&
+    new Set(
+      detail.socialLinks.map((link) =>
+        typeof link === "object" && link !== null
+          ? (link as Record<string, unknown>).provider
+          : null
+      )
+    ).size === detail.socialLinks.length;
 
   return (
     Number.isSafeInteger(detail.submissionId) &&
@@ -185,6 +231,7 @@ export function isCommunityFeedDetail(
     isNullableCanonicalTimestamp(detail.cycleStartedAt) &&
     isNullableCanonicalTimestamp(detail.cycleEndedAt) &&
     payoutIsValid &&
+    socialLinksAreValid &&
     resultIsValid
   );
 }

@@ -2,7 +2,7 @@
 
 import SponsoredBanner from "@/app/components/SponsoredBanner";
 import ProfileLinkButton from "@/app/components/profile/ProfileLinkButton";
-import SubmissionSocialLinks from "@/app/components/profile/SubmissionSocialLinks";
+import { CompactSocialLinks } from "@/app/components/profile/SocialUi";
 import LoadMoreButton from "@/app/components/ui/LoadMoreButton";
 import ModalCloseButton from "@/app/components/ui/ModalCloseButton";
 import {
@@ -337,6 +337,12 @@ export default function FameGrid({
 
                   <PublicPayoutDetails payout={active.payout} />
 
+                  <CompactSocialLinks
+                    username={active.discord_username}
+                    socials={active.social_links}
+                    className="pt-1"
+                  />
+
                 </div>
 
                 {active.sponsored_meta?.enabled &&
@@ -362,12 +368,6 @@ export default function FameGrid({
                 ) : null}
               </div>
 
-              {active.social_links.length > 0 && (
-                <SubmissionSocialLinks
-                  socials={active.social_links}
-                  className="mx-auto mt-4 w-full max-w-md"
-                />
-              )}
               {active.public_visibility_status ===
               SUBMISSION_PUBLIC_VISIBILITY.visible ? (
                 <CommunityCommentThread

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import SponsoredBanner from "@/app/components/SponsoredBanner";
 import CommunityFeedDetailCloseButton from "@/app/spread/[submissionId]/CommunityFeedDetailCloseButton";
+import { CompactSocialLinks } from "@/app/components/profile/SocialUi";
 import { getCycleSponsoredMeta } from "@/lib/cycles/sponsoredCycle";
 import {
   getCommunityFeedDetailMetadataSource,
@@ -157,33 +158,41 @@ export default async function CommunityFeedDetailPage({
                 {detail.state === "finalized" && detail.author ? (
                   <div className="mb-5 border-b border-white/10 pb-5">
                     <p className="mb-2 text-sm text-white/55">Submitted by</p>
-                    <Link
-                      href={`/profile/${encodeURIComponent(detail.author.publicProfileId)}`}
-                      className="inline-flex min-h-12 items-center gap-3 rounded-xl pr-3 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange-main)]"
-                    >
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-orange-500/20 text-lg font-semibold text-orange-100">
-                        {detail.author.avatarUrl ? (
-                          <Image
-                            src={detail.author.avatarUrl}
-                            alt=""
-                            width={48}
-                            height={48}
-                            unoptimized
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span aria-hidden="true">?</span>
-                        )}
-                      </span>
-                      <span>
-                        <span className="block font-semibold text-white">
-                          {detail.author.displayName}
+                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-5">
+                      <Link
+                        href={`/profile/${encodeURIComponent(detail.author.publicProfileId)}`}
+                        className="inline-flex min-h-12 min-w-0 items-center gap-3 rounded-xl pr-3 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange-main)]"
+                      >
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-orange-500/20 text-lg font-semibold text-orange-100">
+                          {detail.author.avatarUrl ? (
+                            <Image
+                              src={detail.author.avatarUrl}
+                              alt=""
+                              width={48}
+                              height={48}
+                              unoptimized
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span aria-hidden="true">?</span>
+                          )}
                         </span>
-                        <span className="block text-xs text-white/55">
-                          View public profile
+                        <span className="min-w-0">
+                          <span className="block truncate font-semibold text-white">
+                            {detail.author.displayName}
+                          </span>
+                          <span className="block text-xs text-white/55">
+                            View public profile
+                          </span>
                         </span>
-                      </span>
-                    </Link>
+                      </Link>
+
+                      <CompactSocialLinks
+                        username={detail.author.displayName}
+                        socials={detail.socialLinks}
+                        className="min-w-0 sm:max-w-[60%]"
+                      />
+                    </div>
                   </div>
                 ) : null}
 

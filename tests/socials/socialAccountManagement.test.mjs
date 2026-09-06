@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import { mock, test } from 'node:test';
 const session='123e4567-e89b-42d3-a456-426614174000',id='123e4567-e89b-42d3-a456-426614174001',requestId='123e4567-e89b-42d3-a456-426614174002';
-const state={calls:[],error:null,visibility:{profile:false,submissions:false,version:0,canEnable:false},identities:[],receipt:{version:1},auth:null,closed:false};
+process.env.NEXT_PUBLIC_BASE_URL='https://dev.cancerculture.example';
+process.env.TIKTOK_LOGIN_KIT_MODE='sandbox';
+process.env.TIKTOK_CLIENT_KEY='test-client-key';
+process.env.TIKTOK_CLIENT_SECRET='test-client-secret-value';
+process.env.TIKTOK_REDIRECT_URI='https://dev.cancerculture.example/api/profile/social-accounts/tiktok/callback';
+const state={calls:[],error:null,visibility:{profile:false,submissions:false,version:0,canEnable:false},identities:[],linking:{eligibleCycles:5,requiredCycles:5,unlocked:true,unlockedAt:'2026-09-05T00:00:00Z'},receipt:{version:1},auth:null,closed:false};
 mock.module(new URL('../../lib/db/admin.ts',import.meta.url),{namedExports:{supabaseAdmin:{async rpc(name,parameters){
   state.calls.push({name,parameters});
-  return {error:state.error,data:name==='get_own_social_account_identities'?state.identities:name==='get_own_social_account_visibility'?state.visibility:name==='disconnect_own_social_account_identity'?{identityId:id,version:2}:state.receipt};
+  return {error:state.error,data:name==='get_own_social_account_identities'?state.identities:name==='get_own_social_account_visibility'?state.visibility:name==='get_own_social_account_linking_status'?state.linking:name==='disconnect_own_social_account_identity'?{identityId:id,version:2}:state.receipt};
 }}}});
 mock.module(new URL('../../lib/auth/requireSession.ts',import.meta.url),{namedExports:{async requireSession(){if(state.auth)throw state.auth;return {session_id:session,discord_user_id:'private-owner'};}}});
 mock.module(new URL('../../lib/writeGate.server.ts',import.meta.url),{namedExports:{assertServerMutationAllowed(){if(state.closed)throw Error('closed');},enforceRouteMutationGate(){return state.closed?Response.json({error:'unavailable'},{status:503}):null;}}});
@@ -12,9 +17,9 @@ const {loadOwnSocialAccountVisibility,setOwnSocialAccountVisibility}=await impor
 const {GET,DELETE}=await import('../../app/api/profile/social-accounts/route.ts');
 const {PATCH}=await import('../../app/api/profile/social-visibility/route.ts');
 const {AuthError}=await import('../../lib/auth/AuthError.ts');
-function reset(){Object.assign(state,{calls:[],error:null,visibility:{profile:false,submissions:false,version:0,canEnable:false},identities:[],receipt:{version:1},auth:null,closed:false});}
+function reset(){Object.assign(state,{calls:[],error:null,visibility:{profile:false,submissions:false,version:0,canEnable:false},identities:[],linking:{eligibleCycles:5,requiredCycles:5,unlocked:true,unlockedAt:'2026-09-05T00:00:00Z'},receipt:{version:1},auth:null,closed:false});}
 const input={scope:'profile',value:true,expectedVersion:0,requestId};
-const req=(body,method='PATCH',origin='http://localhost:3000')=>new Request('http://localhost:3000/api/profile/social-visibility',{method,headers:{'Content-Type':'application/json',...(origin?{Origin:origin}:{})},body:typeof body==='string'?body:JSON.stringify(body)});
+const req=(body,method='PATCH',origin='https://dev.cancerculture.example')=>new Request('http://localhost:3000/api/profile/social-visibility',{method,headers:{'Content-Type':'application/json',...(origin?{Origin:origin}:{})},body:typeof body==='string'?body:JSON.stringify(body)});
 
 test('visibility DTO is exact and minimized; malformed or private fields fail closed',async()=>{
   reset();assert.deepEqual(await loadOwnSocialAccountVisibility(session),state.visibility);
@@ -55,9 +60,9 @@ test('successful and replayed visibility route always reloads current account an
   reset();state.visibility={profile:false,submissions:true,version:7,canEnable:true};
   for(let n=0;n<2;n++){
     state.calls=[];const response=await PATCH(req(input));assert.equal(response.status,200);
-    assert.deepEqual(await response.json(),{identities:[],visibility:state.visibility});
+    assert.deepEqual(await response.json(),{identities:[],visibility:state.visibility,linkingUnlocked:true,providers:{tiktok:{connectAvailable:true}}});
     assert.match(response.headers.get('cache-control'),/no-store/u);
-    assert.deepEqual(state.calls.map(c=>c.name),['set_own_social_account_visibility','get_own_social_account_identities','get_own_social_account_visibility']);
+    assert.deepEqual(state.calls.map(c=>c.name),['set_own_social_account_visibility','get_own_social_account_identities','get_own_social_account_visibility','get_own_social_account_linking_status']);
   }
 });
 test('disconnect route binds exact identity and version; old replay returns current generation',async()=>{

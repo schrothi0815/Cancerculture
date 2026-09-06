@@ -6,13 +6,20 @@ export class SameOriginError extends Error {
   }
 }
 
-export function requireSameOrigin(request: Request) {
+export function requireSameOrigin(request: Request, expectedOrigin?: string) {
   const origin = request.headers.get("origin");
   const contentType = request.headers.get("content-type") ?? "";
+  let allowedOrigin: string;
+
+  try {
+    allowedOrigin = expectedOrigin ? new URL(expectedOrigin).origin : new URL(request.url).origin;
+  } catch {
+    throw new SameOriginError();
+  }
 
   if (
     !origin ||
-    origin !== new URL(request.url).origin ||
+    origin !== allowedOrigin ||
     !contentType.toLowerCase().startsWith("application/json")
   ) {
     throw new SameOriginError();

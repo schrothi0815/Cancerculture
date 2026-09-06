@@ -1,4 +1,5 @@
 import { getAuthErrorStatus, AuthError } from "@/lib/auth/AuthError";
+import { getValidatedApplicationOrigin } from "@/lib/auth/oauth/safeReturnPath";
 import { requireSameOrigin } from "@/lib/http/requireSameOrigin";
 
 export function socialManagementJson(body: unknown, status = 200) {
@@ -10,7 +11,10 @@ export function socialManagementError(error: unknown) {
     status === 400 ? "INVALID_INPUT" : status === 409 ? "SOCIAL_SETTINGS_CONFLICT" : "SOCIAL_SETTINGS_UNAVAILABLE" }, status);
 }
 export async function readSocialManagementRequest(request: Request, keys: readonly string[]) {
-  requireSameOrigin(request);
+  requireSameOrigin(
+    request,
+    getValidatedApplicationOrigin(process.env.NEXT_PUBLIC_BASE_URL).origin,
+  );
   const text = await request.text();
   let body: unknown;
   try { body = text.length <= 2048 ? JSON.parse(text) : null; } catch { body = null; }

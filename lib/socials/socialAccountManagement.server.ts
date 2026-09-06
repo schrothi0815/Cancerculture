@@ -3,6 +3,8 @@ import { AuthError } from "@/lib/auth/AuthError";
 import { supabaseAdmin } from "@/lib/db/admin";
 import { assertServerMutationAllowed } from "@/lib/writeGate.server";
 import { loadOwnSocialAccountIdentities } from "@/lib/socials/socialAccountIdentities.server";
+import { loadOwnSocialAccountLinkingStatus } from "@/lib/socials/socialAccountLinkingStatus.server";
+import { isTikTokOAuthConfigured } from "@/lib/socials/tiktokOAuth.server";
 
 export type SocialAccountVisibility = Readonly<{
   profile: boolean; submissions: boolean; version: number; canEnable: boolean;
@@ -35,9 +37,17 @@ export async function loadOwnSocialAccountVisibility(sessionId: string): Promise
   return Object.freeze({ profile: item.profile, submissions: item.submissions, version: item.version as number, canEnable: item.canEnable });
 }
 export async function loadOwnSocialAccountManagement(sessionId: string) {
-  const identities = await loadOwnSocialAccountIdentities(sessionId);
-  const visibility = await loadOwnSocialAccountVisibility(sessionId);
-  return { identities, visibility };
+  const [identities, visibility, linking] = await Promise.all([
+    loadOwnSocialAccountIdentities(sessionId),
+    loadOwnSocialAccountVisibility(sessionId),
+    loadOwnSocialAccountLinkingStatus(sessionId),
+  ]);
+  return {
+    identities,
+    visibility,
+    linkingUnlocked: linking.unlocked,
+    providers: { tiktok: { connectAvailable: isTikTokOAuthConfigured() } },
+  };
 }
 export async function setOwnSocialAccountVisibility(sessionId: string, input: Record<string, unknown>) {
   validSession(sessionId);

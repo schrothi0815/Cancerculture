@@ -4,13 +4,40 @@ import { useEffect, useRef, useState } from "react";
 import type { OwnSocialAccountIdentity, VerifiedSocialProvider } from "@/lib/socials/socialAccountIdentities.server";
 import type { SocialAccountVisibility } from "@/lib/socials/socialAccountManagement.server";
 
-type Settings = { identities: readonly OwnSocialAccountIdentity[]; visibility: SocialAccountVisibility };
+type Settings = {
+  identities: readonly OwnSocialAccountIdentity[];
+  visibility: SocialAccountVisibility;
+  linkingUnlocked: boolean;
+  providers: { tiktok: { connectAvailable: boolean } };
+};
 type Change = { path: string; method: "DELETE" | "PATCH"; body: Record<string, unknown> };
 const providers: { id: VerifiedSocialProvider; label: string }[] = [
   { id: "tiktok", label: "TikTok" }, { id: "youtube", label: "YouTube" }, { id: "x", label: "X" },
   { id: "instagram", label: "Instagram" }, { id: "facebook", label: "Facebook" },
 ];
 const button = "inline-flex min-h-11 items-center justify-center rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold transition hover:border-[var(--orange-main)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange-main)] disabled:cursor-not-allowed disabled:opacity-40";
+const tiktokResults: Record<string, string> = {
+  connected: "TikTok ownership verified. Choose separately where the account may appear.",
+  cancelled: "TikTok authorization was cancelled. Nothing was connected.",
+  expired: "The TikTok connection request expired. Start a new ownership check.",
+  missing_scope: "TikTok did not grant the profile access required to verify ownership.",
+  invalid_identity: "TikTok returned profile information that could not be verified safely.",
+  conflict: "The TikTok account or your social settings changed. Review the latest state before trying again.",
+  session: "Your CancerCulture session changed or expired. Sign in again before connecting TikTok.",
+  unavailable: "We could not confirm the TikTok result. Refresh the latest account state before trying again.",
+  invalid: "The TikTok return could not be verified. Start a new ownership check.",
+};
+
+function consumeTikTokReturnMessage() {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("social") !== "tiktok") return "";
+  const message = tiktokResults[url.searchParams.get("result") ?? ""] ?? tiktokResults.invalid;
+  url.searchParams.delete("social");
+  url.searchParams.delete("result");
+  url.hash = "connected-social-accounts";
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  return message;
+}
 
 export default function SocialAccountManagement() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -39,12 +66,13 @@ export default function SocialAccountManagement() {
   useEffect(() => {
     mounted.current = true;
     let cancelled = false;
+    const returnedMessage = consumeTikTokReturnMessage();
     async function load() {
       try {
         const response = await fetch("/api/profile/social-accounts", { cache: "no-store" });
         if (!response.ok) throw new Error("Your social account settings could not be loaded. Please try again.");
         const data: Settings = await response.json();
-        if (!cancelled) { setSettings(data); setFailed(false); }
+        if (!cancelled) { setSettings(data); setFailed(false); setMessage(returnedMessage); }
       } catch (error) { if (!cancelled) { setFailed(true); setMessage((error as Error).message); } }
       finally { if (!cancelled) setBusy(false); }
     }
@@ -79,6 +107,45 @@ export default function SocialAccountManagement() {
     } });
   }
 
+  async function startTikTok() {
+    if (!settings || locked.current || busy || failed || pending || !settings.linkingUnlocked ||
+      !settings.providers.tiktok.connectAvailable) return;
+    locked.current = true; setBusy(true); setMessage(""); setConfirm(null);
+    let navigating = false;
+    try {
+      const response = await fetch("/api/profile/social-accounts/tiktok/start", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store",
+      });
+      if (!response.ok) {
+        if (response.status === 409) {
+          await readCurrent();
+          setMessage("Your TikTok account state changed. Review the latest state before trying again.");
+          return;
+        }
+        throw new Error("unavailable");
+      }
+      const data = await response.json() as { authorizeUrl?: unknown };
+      if (Object.keys(data).length !== 1 || typeof data.authorizeUrl !== "string") throw new Error("unavailable");
+      const authorize = new URL(data.authorizeUrl);
+      if (authorize.protocol !== "https:" || authorize.hostname !== "www.tiktok.com" ||
+        authorize.pathname !== "/v2/auth/authorize/" || authorize.username || authorize.password) {
+        throw new Error("unavailable");
+      }
+      navigating = true;
+      window.location.assign(authorize.href);
+    } catch {
+      if (mounted.current) {
+        // A provider start failure does not make the already loaded account
+        // settings untrustworthy. Keep the action retryable.
+        setFailed(false);
+        setMessage("TikTok ownership verification could not be started. Refresh your settings before trying again.");
+      }
+    } finally {
+      locked.current = false;
+      if (mounted.current && !navigating) setBusy(false);
+    }
+  }
+
   return (
     <div className="mt-6 space-y-6" aria-busy={busy}>
       <section aria-labelledby="connected-social-accounts" className="rounded-2xl border border-white/10 bg-black/35 p-5 sm:p-6">
@@ -100,6 +167,7 @@ export default function SocialAccountManagement() {
             {providers.map(provider => {
               const account = settings.identities.find(item => item.provider === provider.id);
               const disabled = busy || failed || Boolean(pending);
+              const canStartTikTok = provider.id === "tiktok" && settings.linkingUnlocked && settings.providers.tiktok.connectAvailable;
               return <div key={provider.id} className="py-4 first:pt-0 last:pb-0">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
@@ -113,8 +181,15 @@ export default function SocialAccountManagement() {
                       <a href={account.url} target="_blank" rel="noopener noreferrer" className="underline decoration-white/30 underline-offset-4">{account.displayLabel}</a>
                     </p> : null}
                     {account && account.state !== "active" ? <p className="mt-2 text-sm text-white/60">This connection is inactive. Reconnecting requires a new ownership check.</p> : null}
+                    {provider.id === "tiktok" && account?.state !== "active" && !settings.linkingUnlocked ?
+                      <p className="mt-2 text-sm text-white/60">Complete five eligible Cycles to unlock TikTok ownership verification.</p> : null}
+                    {provider.id === "tiktok" && account?.state !== "active" && settings.linkingUnlocked && !settings.providers.tiktok.connectAvailable ?
+                      <p className="mt-2 text-sm text-white/60">TikTok ownership verification is unavailable until the secure provider setup is complete.</p> : null}
                   </div>
-                  {account?.state === "active" ? <button type="button" disabled={disabled} className={`${button} shrink-0`} onClick={() => setConfirm(account.identityId)}>Disconnect {provider.label}</button> : null}
+                  {account?.state === "active" ? <button type="button" disabled={disabled} className={`${button} shrink-0`} onClick={() => setConfirm(account.identityId)}>Disconnect {provider.label}</button> :
+                    provider.id === "tiktok" ? <button type="button" disabled={disabled || !canStartTikTok} className={`${button} shrink-0`} onClick={() => void startTikTok()}>
+                      {account ? "Reconnect TikTok" : "Connect TikTok"}
+                    </button> : null}
                 </div>
                 {account && confirm === account.identityId ? <div className="mt-3 rounded-xl border border-orange-400/25 bg-orange-400/5 p-4">
                   <p className="text-sm leading-relaxed">Disconnect {account.displayLabel} from CancerCulture? Reconnecting requires a new ownership check.</p>
